@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Gorras</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-container { 
+            display: none; 
+            background-color: #fff; 
+            border: 1px solid #ccc; 
+            padding: 20px; 
+            margin-top: 20px; 
+            border-radius: 5px;
+        }
+        .cap-box { 
+            background-color: #fff; 
+            border: 1px solid #ccc; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px;
+        }
+        .btn-custom {
+            margin: 5px;
+        }
+        .response-message {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="text-center">Tienda de Gorras</h1>
+
+    <?php if ($response): ?>
+        <div class="alert alert-info response-message"><?= $response ?></div>
+    <?php endif; ?>
+
+    <div id="capList">
+        <?php if (count($gorras) === 0): ?>
+            <p>No hay gorras registradas.</p>
+        <?php else: ?>
+            <?php foreach ($gorras as $gorra): ?>
+                <div class="cap-box" data-id="<?= $gorra['id'] ?>">
+                    <strong><?= $gorra['model'] ?></strong> - <?= $gorra['brand'] ?>, <?= $gorra['material'] ?>, <?= $gorra['color'] ?> Talla: <?= $gorra['size'] ?> Tamaño: <?= $gorra['dimensions'] ?>
+                    <br>
+                    <button class="btn btn-sm btn-warning edit-btn btn-custom">Editar</button>
+                    <button class="btn btn-sm btn-danger delete-btn btn-custom">Eliminar</button>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+
+    <div class="text-center mt-4">
+        <button class="btn btn-primary" id="addNewCap">Registrar Nueva Gorra</button>
+    </div>
+
+    <div class="form-container" id="formContainer">
+        <h2 id="formTitle">Registrar Nueva Gorra</h2>
+        <form id="capForm">
+            <input type="hidden" id="capId" name="id">
+            <input type="hidden" id="action" name="action" value="add">
+            <div class="form-group">
+                <label for="model">Modelo</label>
+                <input type="text" class="form-control" id="model" name="model" required>
+            </div>
+            <div class="form-group">
+                <label for="brand">Marca</label>
+                <input type="text" class="form-control" id="brand" name="brand" required>
+            </div>
+            <div class="form-group">
+                <label for="material">Material</label>
+                <input type="text" class="form-control" id="material" name="material" required>
+            </div>
+            <div class="form-group">
+                <label for="color">Color</label>
+                <input type="text" class="form-control" id="color" name="color" required>
+            </div>
+            <div class="form-group">
+                <label for="size">Talla</label>
+                <input type="text" class="form-control" id="size" name="size" required>
+            </div>
+            <div class="form-group">
+                <label for="dimensions">Tamaño</label>
+                <input type="text" class="form-control" id="dimensions" name="dimensions" required>
+            </div>
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary" id="cancelForm">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const formContainer = document.getElementById('formContainer');
+        const formTitle = document.getElementById('formTitle');
+        const capForm = document.getElementById('capForm');
+        const cancelForm = document.getElementById('cancelForm');
+        const addNewCap = document.getElementById('addNewCap');
+        const editBtns = document.querySelectorAll('.edit-btn');
+        const deleteBtns = document.querySelectorAll('.delete-btn');
+
+        addNewCap.addEventListener('click', () => {
+            formContainer.style.display = 'block';
+            formTitle.textContent = 'Registrar Nueva Gorra';
+            capForm.reset();
+            document.getElementById('action').value = 'add';
+        });
+
+        cancelForm.addEventListener('click', () => {
+            formContainer.style.display = 'none';
+        });
+
+        editBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const parent = this.parentNode;
+                document.getElementById('capId').value = parent.dataset.id;
+                document.getElementById('model').value = parent.children[0].textContent.split(' - ')[0];
+                document.getElementById('brand').value = parent.children[0].textContent.split(' - ')[1];
+                document.getElementById('action').value = 'edit';
+                formContainer.style.display = 'block';
+                formTitle.textContent = 'Editar Gorra';
+            });
+        });
+
+        deleteBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.parentNode.dataset.id;
+                if (confirm('¿Estás seguro de eliminar esta gorra?')) {
+                    fetch('', {
+                        method: 'POST',
+                        body: new URLSearchParams({ action: 'delete', id })
+                    }).then(() => location.reload());
+                }
+            });
+        });
+
+        capForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            fetch('', {
+                method: 'POST',
+                body: new FormData(capForm)
+            }).then(() => location.reload());
+        });
+    });
+</script>
+</body>
+</html>
